@@ -1,22 +1,32 @@
-# Usa una versión estable de Node (puedes cambiar a la que necesites)
-FROM node:20-alpine
+# Etapa 1: Construcción
+FROM node:20-alpine AS builder
 
-# Establece el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copia package.json y package-lock.json primero (para cachear deps)
+# Instalar dependencias
 COPY package*.json ./
-
-# Instala dependencias
 RUN npm install
 
-# Copia todo el proyecto al contenedor
+# Copiar el resto del código
 COPY . .
 
-# Expone el puerto donde Next.js corre por defecto
+# Construir la aplicación
+RUN npm run build
+
+# Etapa 2: Producción
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+# Copiar solo lo necesario desde el builder
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
+
+# Exponer puerto
 EXPOSE 3000
 
-# Comando para correr tu app en modo producción
-CMD ["npm", "run", "dev"] 
-# o "start" si ya construiste con "build"
+# Comando para ejecutar
+CMD ["npm", "start"]
 
