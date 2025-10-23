@@ -46,7 +46,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchDatos(); // obtener al cargar la página
-    const interval = setInterval(fetchDatos, 5000); // actualizar cada 5s
+    const interval = setInterval(fetchDatos, 2000); // actualizar cada 5s
     return () => clearInterval(interval);
   }, []);
 
